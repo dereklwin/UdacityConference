@@ -31,6 +31,8 @@ from models import ProfileMiniForm
 from models import ProfileForm
 from models import TeeShirtSize
 
+from utils import getUserId
+
 from settings import WEB_CLIENT_ID
 
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
@@ -64,26 +66,30 @@ class ConferenceApi(remote.Service):
 
     def _getProfileFromUser(self):
         """Return user Profile from datastore, creating new one if non-existent."""
-        ## TODO 2
+
         ## step 1: make sure user is authed
-        ## uncomment the following lines:
         user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
 
-        ## step 2: create a new Profile from logged in user data
-        ## you can use user.nickname() to get displayName
-        ## and user.email() to get mainEmail
-  
-        profile = Profile(
-            userId = None,
-            key = None,
-            displayName = user.nickname(), 
-            mainEmail= user.email(),
-            teeShirtSize = str(TeeShirtSize.NOT_SPECIFIED),
-        )
+        user_id = getUserId(user)
+        # Create an instance of a Key for an id(user email) of a kind(Profile) 
+        p_key = ndb.Key(Profile, user_id)
+        # Get the entity(user profile) associated with the key
+        profile = p_key.get()
 
-        return profile      # return Profile
+        # If the entity does not exist, create a new entity and put in datastore
+        if not profile:
+            profile = Profile(
+                key = p_key,
+                displayName = user.nickname(), 
+                mainEmail= user.email(),
+                teeShirtSize = str(TeeShirtSize.NOT_SPECIFIED),
+            )
+            # put will store profile as a persistent entity in the Datastore
+            profile.put()
+
+        return profile
 
 
     def _doProfile(self, save_request=None):
