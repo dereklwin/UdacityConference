@@ -34,6 +34,11 @@ handlers:       # static then dynamic
   script: conference.api
   secure: always
 
+# only cron and application devs can access this url
+- url: /crons/set_announcement
+  script: main.app
+  login: admin
+
 libraries:
 
 - name: endpoints
