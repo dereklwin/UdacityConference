@@ -17,5 +17,20 @@ indexes:
 
 - kind: Conference
   properties:
+  - name: month
+  - name: name
+
+- kind: Conference
+  properties:
   - name: seatsAvailable
+  - name: name
+
+- kind: Session
+  properties:
+  - name: startTime
+  - name: name
+
+- kind: Session
+  properties:
+  - name: typeOfSession
   - name: name

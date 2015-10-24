@@ -21,11 +21,11 @@ from google.appengine.ext import ndb
 
 class Profile(ndb.Model):
     """Profile -- User profile object"""
-    displayName = ndb.StringProperty()
-    mainEmail = ndb.StringProperty()
-    teeShirtSize = ndb.StringProperty(default='NOT_SPECIFIED')
+    displayName            = ndb.StringProperty()
+    mainEmail              = ndb.StringProperty()
+    teeShirtSize           = ndb.StringProperty(default='NOT_SPECIFIED')
     conferenceKeysToAttend = ndb.StringProperty(repeated=True)
-
+    sessionsInWishlist     = ndb.StringProperty(repeated=True)
 
 class ProfileMiniForm(messages.Message):
     """ProfileMiniForm -- update Profile form message"""
@@ -64,14 +64,12 @@ class TeeShirtSize(messages.Enum):
 class Speaker(ndb.Model):
     """Speaker -- speaker profile object"""
     displayName = ndb.StringProperty()
-    mainEmail = ndb.StringProperty()
     sessionKeysToAttend = ndb.StringProperty(repeated=True)
+    sessionCount = ndb.ComputedProperty(lambda e: len(e.sessionKeysToAttend))
 
 class SpeakerForm(messages.Message):
     """SpeakerForm -- Speaker form message"""
-    userId = messages.StringField(1)
-    displayName = messages.StringField(2)
-    mainEmail = messages.StringField(3)
+    displayName = messages.StringField(1)
 
 # - - - Conference models - - - - - - - - - - - - - - - - -
 
@@ -125,33 +123,43 @@ class BooleanMessage(messages.Message):
 class ConflictException(endpoints.ServiceException):
     """ConflictException -- exception mapped to HTTP 409 response"""
     http_status = httplib.CONFLICT
+
 # - - - Session models - - - - - - - - - - - - - - - - -
 
 class Session(ndb.Model):
-    """Conference -- Conference object"""
+    """Session -- Session object"""
     name            = ndb.StringProperty(required=True)
     highlights      = ndb.StringProperty()
-    speakerId       = ndb.StringProperty(required=True)
-    duration        = ndb.StringProperty()
+    speakerName     = ndb.StringProperty(required=True)
+    duration        = ndb.IntegerProperty()
     typeOfSession   = ndb.StringProperty(default='NOT_SPECIFIED')
     date            = ndb.DateProperty()
     startTime       = ndb.TimeProperty()
 
 class SessionForm(messages.Message):
-    """ConferenceForm -- Conference outbound form message"""
+    """SessionForm -- Session outbound form message"""
     name            = messages.StringField(1)
     highlights      = messages.StringField(2)
-    speakerId       = messages.StringField(3)
-    duration        = messages.StringField(4)
+    speakerName     = messages.StringField(3)
+    duration        = messages.IntegerField(4)
     typeOfSession   = messages.EnumField('TypeOfSession', 5)
     date            = messages.StringField(6)
     startTime       = messages.StringField(7)
     websafeKey      = messages.StringField(8)
-    speakerDisplayName = messages.StringField(9)
 
 class SessionForms(messages.Message):
     """SessionForms -- multiple Session outbound form message"""
     items = messages.MessageField(SessionForm, 1, repeated=True)
+
+class SessionQueryForm(messages.Message):
+    """SessionQueryForm -- Session query inbound form message"""
+    field = messages.StringField(1)
+    operator = messages.StringField(2)
+    value = messages.StringField(3)
+
+class SessionQueryForms(messages.Message):
+    """SessionQueryForms -- multiple SessionQueryForm inbound form message"""
+    filters = messages.MessageField(ConferenceQueryForm, 1, repeated=True)
 
 class TypeOfSession(messages.Enum):
     """TypeOfSession -- enumeration value for session types"""
