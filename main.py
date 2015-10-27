@@ -24,7 +24,7 @@ class SendConfirmationEmailHandler(webapp2.RequestHandler):
         )
 
 class SetSpeakerHandler(webapp2.RequestHandler):
-    def get(self):
+    def post(self):
         """Set Announcement in Memcache."""
         # TODO 1
         # use _cacheAnnouncement() to set announcement in Memcache

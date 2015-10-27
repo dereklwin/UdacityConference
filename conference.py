@@ -72,8 +72,7 @@ OPERATORS = {
             'GT':   '>',
             'GTEQ': '>=',
             'LT':   '<',
-            'LTEQ': '<=',
-            'NE':   '!='
+            'LTEQ': '<='
             }
 
 FIELDS =    {

@@ -34,4 +34,6 @@ two additional Queries:
 queryAllSessions API was added to filter All sessions by time and session type.
 
 How would you handle a query for all non-workshop sessions before 7 pm? What is the problem for implementing this query? What ways to solve it did you think of?
--Using the API queryAllSession, a user can issue multiple filters to a query. The API will first order all Sessions by time. It will filter out all sessions that are not of type workshop. Then the API will format the user input time to a DateTime object and filter all times that are before 19:00 and after 00:00. Filtering times after 00:00 removes all Session Entities that do not have a a startTime Property filled.
+The problem with using a (!=) to query for all non-workshop sessions is that it results in inequality filters being applied to more than one property. Datastore handles the not-equal operator by joining a less-than(<) and greater than(>) query. So if we query for both non-workshop sessions and sessions before 7pm, it results in inequality filters being applied to two separate properties (typeOfSession and startTime). 
+
+One way to work around this issue is to disable the use of the not-equal query and make the user only request for the session type they are intrested in. If they want all sessions that are not of type workshop, the user will individually query for each session that are of the type Demonstration, Lecture, Panel, Keynote.
