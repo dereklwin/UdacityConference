@@ -17,60 +17,6 @@ import endpoints
 from protorpc import messages
 from google.appengine.ext import ndb
 
-# - - - Profile models - - - - - - - - - - - - - - - - -
-
-class Profile(ndb.Model):
-    """Profile -- User profile object"""
-    displayName            = ndb.StringProperty()
-    mainEmail              = ndb.StringProperty()
-    teeShirtSize           = ndb.StringProperty(default='NOT_SPECIFIED')
-    conferenceKeysToAttend = ndb.StringProperty(repeated=True)
-    sessionsInWishlist     = ndb.StringProperty(repeated=True)
-
-class ProfileMiniForm(messages.Message):
-    """ProfileMiniForm -- update Profile form message"""
-    displayName = messages.StringField(1)
-    teeShirtSize = messages.EnumField('TeeShirtSize', 2)
-
-
-class ProfileForm(messages.Message):
-    """ProfileForm -- Profile outbound form message"""
-    userId = messages.StringField(1)
-    displayName = messages.StringField(2)
-    mainEmail = messages.StringField(3)
-    teeShirtSize = messages.EnumField('TeeShirtSize', 4)
-
-
-class TeeShirtSize(messages.Enum):
-    """TeeShirtSize -- t-shirt size enumeration value"""
-    NOT_SPECIFIED = 1
-    XS_M = 2
-    XS_W = 3
-    S_M = 4
-    S_W = 5
-    M_M = 6
-    M_W = 7
-    L_M = 8
-    L_W = 9
-    XL_M = 10
-    XL_W = 11
-    XXL_M = 12
-    XXL_W = 13
-    XXXL_M = 14
-    XXXL_W = 15
-
-# - - - Speaker models - - - - - - - - - - - - - - - - -
-
-class Speaker(ndb.Model):
-    """Speaker -- speaker profile object"""
-    displayName = ndb.StringProperty()
-    sessionKeysToAttend = ndb.StringProperty(repeated=True)
-    sessionCount = ndb.ComputedProperty(lambda e: len(e.sessionKeysToAttend))
-
-class SpeakerForm(messages.Message):
-    """SpeakerForm -- Speaker form message"""
-    displayName = messages.StringField(1)
-
 # - - - Conference models - - - - - - - - - - - - - - - - -
 
 class Conference(ndb.Model):
@@ -130,7 +76,7 @@ class Session(ndb.Model):
     """Session -- Session object"""
     name            = ndb.StringProperty(required=True)
     highlights      = ndb.StringProperty()
-    speakerName     = ndb.StringProperty(required=True)
+    mainEmail       = ndb.StringProperty(required=True)
     duration        = ndb.IntegerProperty()
     typeOfSession   = ndb.StringProperty(default='NOT_SPECIFIED')
     date            = ndb.DateProperty()
@@ -141,11 +87,12 @@ class SessionForm(messages.Message):
     name            = messages.StringField(1)
     highlights      = messages.StringField(2)
     speakerName     = messages.StringField(3)
-    duration        = messages.IntegerField(4)
-    typeOfSession   = messages.EnumField('TypeOfSession', 5)
-    date            = messages.StringField(6)
-    startTime       = messages.StringField(7)
-    websafeKey      = messages.StringField(8)
+    mainEmail       = messages.StringField(4)
+    duration        = messages.IntegerField(5)
+    typeOfSession   = messages.EnumField('TypeOfSession', 6)
+    date            = messages.StringField(7)
+    startTime       = messages.StringField(8)
+    websafeKey      = messages.StringField(9)
 
 class SessionForms(messages.Message):
     """SessionForms -- multiple Session outbound form message"""
@@ -169,6 +116,49 @@ class TypeOfSession(messages.Enum):
     Panel         = 4
     Workshop      = 5
     Keynote       = 6
+
+# - - - Profile models - - - - - - - - - - - - - - - - -
+
+class Profile(ndb.Model):
+    """Profile -- User profile object"""
+    displayName            = ndb.StringProperty()
+    mainEmail              = ndb.StringProperty()
+    teeShirtSize           = ndb.StringProperty(default='NOT_SPECIFIED')
+    conferenceKeysToAttend = ndb.StringProperty(repeated=True)
+    sessionsInWishlist     = ndb.KeyProperty(kind=Session, repeated=True)
+    speakerOfSessions      = ndb.KeyProperty(kind=Session, repeated=True)
+
+class ProfileMiniForm(messages.Message):
+    """ProfileMiniForm -- update Profile form message"""
+    displayName = messages.StringField(1)
+    teeShirtSize = messages.EnumField('TeeShirtSize', 2)
+
+
+class ProfileForm(messages.Message):
+    """ProfileForm -- Profile outbound form message"""
+    userId = messages.StringField(1)
+    displayName = messages.StringField(2)
+    mainEmail = messages.StringField(3)
+    teeShirtSize = messages.EnumField('TeeShirtSize', 4)
+
+
+class TeeShirtSize(messages.Enum):
+    """TeeShirtSize -- t-shirt size enumeration value"""
+    NOT_SPECIFIED = 1
+    XS_M = 2
+    XS_W = 3
+    S_M = 4
+    S_W = 5
+    M_M = 6
+    M_W = 7
+    L_M = 8
+    L_W = 9
+    XL_M = 10
+    XL_W = 11
+    XXL_M = 12
+    XXL_W = 13
+    XXXL_M = 14
+    XXXL_W = 15
 
 # - - - Announcement - - - - - - - - - - - - - - - - -
 

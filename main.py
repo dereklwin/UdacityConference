@@ -25,10 +25,11 @@ class SendConfirmationEmailHandler(webapp2.RequestHandler):
 
 class SetSpeakerHandler(webapp2.RequestHandler):
     def post(self):
-        """Set Announcement in Memcache."""
+        """Set Speaker Announcement in Memcache."""
         # TODO 1
         # use _cacheAnnouncement() to set announcement in Memcache
-        ConferenceApi._speakerAnnouncement()
+        ConferenceApi._speakerAnnouncement(self.request.get('websafeconferenceKey'),
+        								   self.request.get('websafespeaker'))
 
 app = webapp2.WSGIApplication([
     ('/crons/set_announcement', SetAnnouncementHandler),

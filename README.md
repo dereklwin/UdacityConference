@@ -26,7 +26,7 @@ speaker name are the minimum required filed to create a Session. date and start 
 
 
 Speaker Model:
-Speaker Models are designed to contain a repeating Property type for the Sessions a Speaker will be presenting in. Since we do not request for any other unique information for a Speaker, we require the Speaker Name to be unique so that it can be used as the Key. To determine who the Feature Speaker is, we use the Computed Property Type to count the number of Sessions a Speaker will be preseting in. 
+Speakers are implimented through the Pofile model. The Profile model already contains most of the information needed for a speaker. It is cleaner to add a key property to the Profile model and store the session keys that a speaker will present in. The profile model uses email address as the unique key which addresses speakers with the same name. This enhancement of Profile kind does not modify the behavior of the Profile APIs. 
 
 Additional Queries
 ------------------
@@ -34,6 +34,11 @@ two additional Queries:
 queryAllSessions API was added to filter All sessions by time and session type.
 
 How would you handle a query for all non-workshop sessions before 7 pm? What is the problem for implementing this query? What ways to solve it did you think of?
+
 The problem with using a (!=) to query for all non-workshop sessions is that it results in inequality filters being applied to more than one property. Datastore handles the not-equal operator by joining a less-than(<) and greater than(>) query. So if we query for both non-workshop sessions and sessions before 7pm, it results in inequality filters being applied to two separate properties (typeOfSession and startTime). 
 
-One way to work around this issue is to disable the use of the not-equal query and make the user only request for the session type they are intrested in. If they want all sessions that are not of type workshop, the user will individually query for each session that are of the type Demonstration, Lecture, Panel, Keynote.
+One way to work around this issue is to do the use python to do the second inequality filter. For example, we will issue the inequality filter on every conference after 7pm. In python, we will filter for all sessions not equal to a certain type before copying it to SessionForm.
+
+
+You might want to make sure that the key provided by the User actually points to a Session object and not some other ndb Entity. As it is this endpoint will happily accept a key pointing to anything - which could cause problems down the road
+how to check a websafekey is of type 
