@@ -555,12 +555,12 @@ class ConferenceApi(remote.Service):
         c_key = ndb.Key(urlsafe=webSafeConferenceKey)
         sessions = Session.query(ancestor=c_key)
         # filter sessions by the unique email of the speaker
-        sessions = sessions.filter(Session.speakerEmail == speaker.mainEmail).fetch()
+        sessions = sessions.filter(Session.mainEmail == speaker.mainEmail).fetch()
 
         if sessions:
             # If there are almost sold out conferences,
             # format announcement and set it in memcache
-            announcement = 'Featured Speaker: {}\n In Sessions: {}'.format(
+            announcement = 'Featured Speaker: {} In Sessions: {}'.format(
                 speaker.displayName, 
                 ', '.join(session.name for session in sessions))
             memcache.set(MEMCACHE_SPEAKER_KEY, announcement)
@@ -586,7 +586,7 @@ class ConferenceApi(remote.Service):
 
 # - - - Session objects - - - - - - - - - - - - - - - - -
     @ndb.transactional(xg=True)
-    def _createSessionObject(self, request):
+    def _createSessionObject(self, request, s_id):
         """Create Session object and Speaker object, returning SessionForm."""
         # Verify user is logged in
         user = endpoints.get_current_user()
@@ -632,8 +632,6 @@ class ConferenceApi(remote.Service):
         else:
             data['typeOfSession'] = str(data['typeOfSession'])
 
-        # make Session key from ID and parent conference key
-        s_id = Session.allocate_ids(size=1, parent=ndb.Key(urlsafe=conf_key))[0]
         s_key = ndb.Key(Session, s_id, parent=conf_key)
         data['key'] = s_key
 
@@ -657,7 +655,7 @@ class ConferenceApi(remote.Service):
 
         # Use taskqeueu to set Feature Speaker
         taskqueue.add(params={'websafeconferenceKey':conf_key.urlsafe(),
-                        'websafespeaker':speaker.urlsafe()},
+                        'websafespeaker':speakerKey.urlsafe()},
                          url='/tasks/set_speaker')
 
         return self._copySessionToForm(request)
@@ -684,8 +682,9 @@ class ConferenceApi(remote.Service):
             http_method='POST', name='createSession')
     def createSession(self, request):
         """Create new session. Open to the organizer of the conference"""
-        
-        return self._createSessionObject(request)
+        # make Session key from ID and parent conference key
+        s_id = Session.allocate_ids(size=1, parent=ndb.Key(urlsafe=request.websafeConferenceKey))[0]
+        return self._createSessionObject(request, s_id)
 
     @endpoints.method(SESSION_REQUEST, SessionForms,
             path='getConferenceSessions/{websafeConferenceKey}',
@@ -805,7 +804,7 @@ class ConferenceApi(remote.Service):
 
         # filter for all sessions between morning til 7pm
         sessions = q.filter(ndb.AND(
-                        Session.startTime <= datetime.strptime("19:00", "%H:%M").time()),
+                        Session.startTime < datetime.strptime("19:00", "%H:%M").time()),
                         (Session.startTime >= datetime.strptime("00:00", "%H:%M").time())).fetch()
 
         items = []

@@ -38,7 +38,3 @@ How would you handle a query for all non-workshop sessions before 7 pm? What is 
 The problem with using a (!=) to query for all non-workshop sessions is that it results in inequality filters being applied to more than one property. Datastore handles the not-equal operator by joining a less-than(<) and greater than(>) query. So if we query for both non-workshop sessions and sessions before 7pm, it results in inequality filters being applied to two separate properties (typeOfSession and startTime). 
 
 One way to work around this issue is to do the use python to do the second inequality filter. For example, we will issue the inequality filter on every conference after 7pm. In python, we will filter for all sessions not equal to a certain type before copying it to SessionForm.
-
-
-You might want to make sure that the key provided by the User actually points to a Session object and not some other ndb Entity. As it is this endpoint will happily accept a key pointing to anything - which could cause problems down the road
-how to check a websafekey is of type 
